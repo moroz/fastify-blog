@@ -16,5 +16,13 @@
       "onFail": "download"
     }
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "fastify": "^5.12.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "oxfmt": "^0.68.0",
+    "typescript": "^7.0.2"
+  }
 }
