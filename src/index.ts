@@ -2,21 +2,36 @@ import Fastify from "fastify";
 import { fastifyPostgres } from "@fastify/postgres";
 import { sessionRoutes } from "./modules/session/session-routes.js";
 import { pageRoutes } from "./modules/pages/page-routes.js";
+import { MikroORM, RequestContext } from "@mikro-orm/postgresql";
+import mikroOrmConfig from "@/mikro-orm.config.js";
 
-const fastify = Fastify({
+const orm = await MikroORM.init({
+  ...mikroOrmConfig,
+  debug: true,
+});
+
+const app = Fastify({
   logger: true,
 });
 
-fastify.register(fastifyPostgres, {
+app.addHook("onRequest", (_req, _reply, done) => {
+  RequestContext.create(orm.em, done);
+});
+
+app.addHook("onClose", async () => {
+  await orm.close();
+});
+
+app.register(fastifyPostgres, {
   connectionString: "postgres://postgres:postgres@localhost/fastify_blog_dev",
 });
 
-fastify.register(pageRoutes);
-fastify.register(sessionRoutes);
+app.register(pageRoutes);
+app.register(sessionRoutes);
 
 try {
-  await fastify.listen({ port: 3000 });
+  await app.listen({ port: 3000 });
 } catch (err) {
-  fastify.log.error(err);
+  app.log.error(err);
   process.exit(1);
 }

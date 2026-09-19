@@ -1,3 +1,7 @@
 [tools]
 node = "latest"
 oxfmt = "latest"
+
+[env]
+PGDATABASE = "fastify_blog_dev"
+DATABASE_URL = "postgres://postgres:postgres@localhost/{{ env.PGDATABASE }}"
