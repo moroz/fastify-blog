@@ -1,7 +1,7 @@
 import Fastify from "fastify";
-import routes from "./routes";
 import { fastifyPostgres } from "@fastify/postgres";
-import { sessionRoutes } from "./modules/session/session-routes";
+import { sessionRoutes } from "./modules/session/session-routes.js";
+import { pageRoutes } from "./modules/pages/page-routes.js";
 
 const fastify = Fastify({
   logger: true,
@@ -11,7 +11,7 @@ fastify.register(fastifyPostgres, {
   connectionString: "postgres://postgres:postgres@localhost/fastify_blog_dev",
 });
 
-fastify.register(routes);
+fastify.register(pageRoutes);
 fastify.register(sessionRoutes);
 
 try {
