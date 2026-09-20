@@ -1,2 +1,2 @@
 tsx: pnpm run tsc:watch
-assets: pnpm run assets:watch
+assets: cd client && pnpm run dev

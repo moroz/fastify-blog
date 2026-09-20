@@ -30,7 +30,7 @@ app.register(fastifyPostgres, {
 });
 
 app.register(fastifyStatic, {
-  root: path.join(import.meta.dirname, "assets/dist"),
+  root: path.join(import.meta.dirname, "../client/assets"),
   prefix: "/assets/",
 });
 
