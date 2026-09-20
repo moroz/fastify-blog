@@ -12,10 +12,11 @@
     "plugins": [{ "name": "@kitajs/ts-html-plugin" }],
     "lib": ["ESNext", "ESNext.Iterator", "ESNext.Temporal"],
     "rootDir": "src/",
-    "outDir": "dist/",
+    "outDir": "dist/server/",
     "paths": {
       "@modules/*": ["./src/modules/*"],
       "@/*": ["./src/*"],
     },
   },
+  "exclude": ["./client/*"],
 }
