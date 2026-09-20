@@ -11,3 +11,6 @@ export const PostEntity = defineEntity({
     body: p.text().lazy(),
   },
 });
+
+export class Post extends PostEntity.class {}
+PostEntity.setClass(Post);

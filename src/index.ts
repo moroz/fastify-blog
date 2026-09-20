@@ -4,6 +4,8 @@ import { sessionRoutes } from "./modules/session/session-routes.js";
 import { pageRoutes } from "./modules/pages/page-routes.js";
 import { MikroORM, RequestContext } from "@mikro-orm/postgresql";
 import mikroOrmConfig from "@/mikro-orm.config.js";
+import { fastifyStatic } from "@fastify/static";
+import path from "node:path";
 
 const orm = await MikroORM.init({
   ...mikroOrmConfig,
@@ -24,6 +26,11 @@ app.addHook("onClose", async () => {
 
 app.register(fastifyPostgres, {
   connectionString: "postgres://postgres:postgres@localhost/fastify_blog_dev",
+});
+
+app.register(fastifyStatic, {
+  root: path.join(import.meta.dirname, "assets/dist"),
+  prefix: "/assets/",
 });
 
 app.register(pageRoutes);

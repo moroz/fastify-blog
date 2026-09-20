@@ -1,5 +1,6 @@
 [tools]
 node = "latest"
+overmind = "latest"
 oxfmt = "latest"
 
 [env]

@@ -1,11 +1,26 @@
 import { Layout } from "@/modules/common/views/layout.js";
+import { Post } from "@/modules/posts/post.entity.js";
 
-interface Props {}
+interface Props {
+  posts: Post[];
+}
 
-export const Index = ({}: Props = {}) => {
+export function Index({ posts }: Props) {
   return (
     <Layout title="Home page">
-      <h1>Hello world!</h1>
+      <h1 class="text-2xl font-bold">Hello world!</h1>
+      <section>
+        <h2>Posts</h2>
+        {posts.map((post) => {
+          return (
+            <article>
+              <h3>
+                {post.title} ({post.id})
+              </h3>
+            </article>
+          );
+        })}
+      </section>
     </Layout>
   );
-};
+}
