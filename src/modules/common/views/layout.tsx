@@ -7,12 +7,10 @@ interface Props {
   title?: string;
 }
 
-function ProductionManifestEntrypoints({
-  manifest,
-}: {
-  manifest: Manifest | null;
-}) {
-  if (!manifest) return null;
+function ViteEntrypoint({ manifest }: { manifest: Manifest | null }) {
+  if (!manifest) {
+    return <script type="module" src="http://localhost:5173/src/main.ts" />;
+  }
 
   const chunk = manifest["index.html"];
 
@@ -32,10 +30,7 @@ export const Layout: Component<Props> = ({ children, title }) => {
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {NODE_ENV === "development" && (
-          <script type="module" src="http://localhost:5173/src/main.ts" />
-        )}
-        <ProductionManifestEntrypoints manifest={ASSET_MANIFEST} />
+        <ViteEntrypoint manifest={ASSET_MANIFEST} />
         <title>{title}</title>
       </head>
       <body>{children}</body>
