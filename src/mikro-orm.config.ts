@@ -1,6 +1,7 @@
 import { defineConfig } from "@mikro-orm/postgresql";
 import { Migrator } from "@mikro-orm/migrations";
 import { DATABASE_URL } from "./config.js";
+import camelcase from "camelcase";
 
 export default defineConfig({
   clientUrl: DATABASE_URL,
@@ -12,7 +13,7 @@ export default defineConfig({
       if (!name) {
         throw new Error("Migration must have a name!");
       }
-      return `${timestamp}_${name}`;
+      return `${timestamp}_${camelcase(name, { pascalCase: true })}`;
     },
   },
 });

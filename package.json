@@ -24,13 +24,15 @@
     "@mikro-orm/postgresql": "^7.2.0",
     "fastify": "^5.12.5",
     "mikro-orm-temporal": "^2.0.3",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^7.2.0",
     "@mikro-orm/migrations": "^7.2.0",
     "@tailwindcss/cli": "^4.3.3",
     "@types/node": "^26.6.1",
+    "camelcase": "^9.0.0",
     "oxfmt": "^0.68.0",
     "tsc-alias": "^1.9.5",
     "tsx": "^4.23.13",

@@ -6,6 +6,7 @@ import { MikroORM, RequestContext } from "@mikro-orm/postgresql";
 import mikroOrmConfig from "@/mikro-orm.config.js";
 import { fastifyStatic } from "@fastify/static";
 import path from "node:path";
+import "zod/compile"; // automatically compile all zod schemas in the application
 
 const orm = await MikroORM.init({
   ...mikroOrmConfig,
