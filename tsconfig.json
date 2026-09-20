@@ -15,7 +15,8 @@
     "rootDir": "src/",
     "outDir": "dist/",
     "paths": {
-      "@/*": ["./src/*"]
+      "@modules/*": ["./src/modules/*"],
+      "@/*": ["./src/*"],
     }
   }
 }
