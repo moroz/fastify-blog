@@ -21,6 +21,7 @@
     "@kitajs/ts-html-plugin": "5.0.0-next.2",
     "@mikro-orm/core": "^7.2.0",
     "@mikro-orm/postgresql": "^7.2.0",
+    "argon2": "^0.45.1",
     "fastify": "^5.12.5",
     "mikro-orm-temporal": "^2.0.3",
     "zod": "^4.6.5"

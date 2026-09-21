@@ -1,5 +1,7 @@
 import { EntityManager } from "@mikro-orm/postgresql";
+import argon2 from "argon2";
 import { z } from "zod";
+import { parse } from "zod/v4/core";
 
 export const registerUserInputSchema = z
   .object({
@@ -23,5 +25,9 @@ export class UserService {
     if (!parseResult.success) {
       return parseResult.error;
     }
+
+    const params = parseResult.data;
+
+    const passwordHash = await argon2.hash(params.password);
   }
 }
