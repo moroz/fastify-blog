@@ -1,6 +1,7 @@
 import { defineEntity, p } from "@mikro-orm/core";
-import { BaseEntity } from "@modules/common/base.entity.js";
-import { Post } from "@modules/posts/post.entity.js";
+import { BaseEntity } from "../common/base.entity.js";
+import { Post } from "../posts/post.entity.js";
+import argon2 from "argon2";
 
 export const UserSchema = defineEntity({
   name: "User",
@@ -16,5 +17,12 @@ export const UserSchema = defineEntity({
   },
 });
 
-export class User extends UserSchema.class {}
+export class User extends UserSchema.class {
+  async verifyPassword(password: string): Promise<boolean> {
+    if (!this.passwordHash) return false;
+
+    return await argon2.verify(this.passwordHash, password);
+  }
+}
+
 UserSchema.setClass(User);

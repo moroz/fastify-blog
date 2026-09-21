@@ -1,14 +1,16 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 import argon2 from "argon2";
 import { z } from "zod";
-import { parse } from "zod/v4/core";
+import { User } from "./user.entity.js";
 
 export const registerUserInputSchema = z
   .object({
-    email: z.string(),
+    email: z.email(),
     handle: z.string(),
+    displayName: z.string(),
     password: z.string(),
     passwordConfirmation: z.string(),
+    bio: z.string().nullable(),
   })
   .refine((user) => user.password === user.passwordConfirmation, {
     error: "Passwords do not match.",
@@ -21,13 +23,30 @@ export class UserService {
   constructor(private em: EntityManager) {}
 
   async registerUser(input: RegisterUserInput) {
-    const parseResult = registerUserInputSchema.safeParse(input);
-    if (!parseResult.success) {
-      return parseResult.error;
-    }
-
-    const params = parseResult.data;
-
+    const params = registerUserInputSchema.parse(input);
     const passwordHash = await argon2.hash(params.password);
+
+    const user = this.em.create(User, {
+      displayName: params.displayName,
+      bio: params.bio,
+      email: params.email,
+      passwordHash,
+      handle: params.handle,
+    });
+
+    await this.em.flush();
+
+    return user;
+  }
+
+  async authenticateUserByEmailPassword(
+    email: string,
+    password: string,
+  ): Promise<User | null> {
+    const user = await this.em.findOne(User, { email });
+    if (!user) return null;
+
+    if (!(await user.verifyPassword(password))) return null;
+    return user;
   }
 }

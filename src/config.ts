@@ -26,7 +26,17 @@ export async function loadViteManifest(): Promise<Manifest | null> {
   return JSON.parse(json) as Manifest;
 }
 
+function buildTestDatabaseUrl(connString: string, testDb: string) {
+  const parsed = new URL(connString);
+  parsed.pathname = `/${testDb}`;
+  return String(parsed);
+}
+
 export const DATABASE_URL = mustGetenv("DATABASE_URL");
+export const TEST_DATABASE_NAME = "gutter_social_test";
+export const TEST_DATABASE_URL =
+  process.env.TEST_DATABASE_URL ||
+  buildTestDatabaseUrl(DATABASE_URL, TEST_DATABASE_NAME);
 export const NODE_ENV = process.env.NODE_ENV || "development";
 
 export const ASSET_MANIFEST = await loadViteManifest();

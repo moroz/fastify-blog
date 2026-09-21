@@ -1,6 +1,6 @@
 import { defineEntity, p } from "@mikro-orm/core";
-import { BaseEntity } from "@modules/common/base.entity.js";
-import { User } from "@modules/users/user.entity.js";
+import { BaseEntity } from "../common/base.entity.js";
+import { User } from "../users/user.entity.js";
 
 export const PostEntity = defineEntity({
   name: "Post",

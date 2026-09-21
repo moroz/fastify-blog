@@ -7,6 +7,7 @@ export default defineConfig({
   clientUrl: DATABASE_URL,
   entities: ["./dist/**/*.entity.js"],
   entitiesTs: ["./src/**/*.entity.ts"],
+  dynamicImportProvider: (id) => import(id),
   extensions: [Migrator],
   migrations: {
     fileName: (timestamp, name) => {
