@@ -1,4 +1,4 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+import { EntityManager, EntityRepository } from "@mikro-orm/postgresql";
 import argon2 from "argon2";
 import { z } from "zod";
 import { User } from "./user.entity.js";
@@ -20,13 +20,17 @@ export const registerUserInputSchema = z
 export type RegisterUserInput = z.infer<typeof registerUserInputSchema>;
 
 export class UserService {
-  constructor(private em: EntityManager) {}
+  private repository: EntityRepository<User>;
+
+  constructor(private em: EntityManager) {
+    this.repository = em.getRepository(User);
+  }
 
   async registerUser(input: RegisterUserInput) {
     const params = registerUserInputSchema.parse(input);
     const passwordHash = await argon2.hash(params.password);
 
-    const user = this.em.create(User, {
+    const user = this.repository.create({
       displayName: params.displayName,
       bio: params.bio,
       email: params.email,
@@ -43,7 +47,7 @@ export class UserService {
     email: string,
     password: string,
   ): Promise<User | null> {
-    const user = await this.em.findOne(User, { email });
+    const user = await this.repository.findOne({ email });
     if (!user) return null;
 
     if (!(await user.verifyPassword(password))) return null;
