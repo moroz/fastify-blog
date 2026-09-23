@@ -1,6 +1,8 @@
 import { TEST_DATABASE_URL } from "@/config.js";
 import { initServices, Services } from "@/services.js";
 import { EntityManager, MikroORM } from "@mikro-orm/postgresql";
+import { User } from "@modules/users/user.entity.js";
+import { UserService } from "@modules/users/user.service.js";
 import { afterAll, test as base, beforeAll } from "vitest";
 
 let services: Services;
@@ -10,15 +12,29 @@ beforeAll(async () => {
     clientUrl: TEST_DATABASE_URL,
   });
   await services.orm.migrator.up();
+
+  await services.em.fork().nativeDelete(User, {});
 });
 
 afterAll(async () => {
   await services.orm.close();
 });
 
-export const test = base.extend<{ em: EntityManager }>({
+const testWithEm = base.extend<{ em: EntityManager }>({
   em: async ({}, use) => {
-    await use(services.em.fork());
+    const em = services.em.fork();
+    await em.begin();
+    try {
+      await use(em);
+    } finally {
+      await em.rollback();
+    }
+  },
+});
+
+export const test = testWithEm.extend<{ userService: UserService }>({
+  userService: async ({ em }, use) => {
+    await use(new UserService(em));
   },
 });
 

@@ -4,7 +4,7 @@ overmind = "latest"
 oxfmt = "latest"
 
 [env]
-PGDATABASE = "fastify_blog_dev"
+PGDATABASE = "gutter_social_dev"
 DATABASE_URL = "postgres://postgres:postgres@localhost/{{ env.PGDATABASE }}"
 
 # openssl genpkey -algorithm ed25519

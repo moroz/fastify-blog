@@ -1,11 +1,12 @@
 import { test, uniqueEmail, uniqueHandle } from "@modules/common/fixtures.js";
-import { describe, expect } from "vitest";
+import { beforeEach, describe, expect } from "vitest";
 import { ZodError } from "zod";
 import {
   RegisterUserInput,
   registerUserInputSchema,
   UserService,
 } from "./user.service.js";
+import { User } from "./user.entity.js";
 
 function validParams(
   overrides?: Partial<RegisterUserInput>,
@@ -119,19 +120,42 @@ describe(UserService, () => {
   });
 
   describe("authenticateUserByEmailPassword", () => {
-    test("returns user with valid params", async ({ em }) => {
-      const srv = new UserService(em);
+    let user: User;
+    const email = uniqueEmail();
+    const password = "password123";
 
-      const params = validParams();
-
-      const user = await srv.registerUser(params);
+    test.beforeEach(async ({ userService }) => {
+      const params = validParams({
+        email,
+        password,
+        passwordConfirmation: password,
+      });
+      user = await userService.registerUser(params);
       expect(user).not.toBeNull();
+    });
 
-      const actual = await srv.authenticateUserByEmailPassword(
-        params.email,
-        params.password,
+    test("returns user with valid params", async ({ userService }) => {
+      const actual = await userService.authenticateUserByEmailPassword(
+        email,
+        password,
       );
       expect(actual?.id).toEqual(user.id);
+    });
+
+    test("returns null with invalid params", async ({ userService }) => {
+      const examples: ReadonlyArray<{ email: string; password: string }> = [
+        { email, password: "invalid" },
+        { email: "invalid@email", password },
+        { email: "invalid@email", password: "invalid" },
+      ];
+
+      for (const { email, password } of examples) {
+        const actual = await userService.authenticateUserByEmailPassword(
+          email,
+          password,
+        );
+        expect(actual).toBeNull();
+      }
     });
   });
 });
