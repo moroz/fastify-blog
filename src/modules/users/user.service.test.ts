@@ -1,8 +1,13 @@
 import { initServices, Services } from "@/services.js";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { RegisterUserInput, UserService } from "./user.service.js";
+import {
+  RegisterUserInput,
+  registerUserInputSchema,
+  UserService,
+} from "./user.service.js";
 import { TEST_DATABASE_URL } from "@/config.js";
 import { User } from "./user.entity.js";
+import { ZodError } from "zod";
 
 let services: Services;
 
@@ -28,7 +33,7 @@ function uniqueEmail(): string {
 }
 
 function uniqueHandle(): string {
-  return `example-${uniquePart()}`;
+  return `${uniquePart()}`;
 }
 
 function validParams(
@@ -46,6 +51,40 @@ function validParams(
 }
 
 describe(UserService, () => {
+  describe("RegisterUserInput", () => {
+    test("is valid with valid params", () => {
+      const params = validParams();
+      const result = registerUserInputSchema.safeParse(params);
+      expect(result.success).toBe(true);
+    });
+
+    test("is invalid with invalid email", () => {
+      const examples = ["invalid@email", "", "invalid"];
+
+      for (const email of examples) {
+        const params = validParams({ email });
+        const result = registerUserInputSchema.safeParse(params);
+        expect(result.success).toBe(false);
+        expect(result.error?.issues).toEqual([
+          expect.objectContaining({ path: ["email"] }),
+        ]);
+      }
+    });
+
+    test("is invalid with invalid handle", () => {
+      const examples = ["too_long_longer_than_15_chars", "", "invalid_!"];
+
+      for (const handle of examples) {
+        const params = validParams({ handle });
+        const result = registerUserInputSchema.safeParse(params);
+        expect(result.success).toBe(false);
+        expect(result.error?.issues).toEqual([
+          expect.objectContaining({ path: ["handle"] }),
+        ]);
+      }
+    });
+  });
+
   describe("registerUser", () => {
     test("creates a user with valid params", async () => {
       const em = services.em.fork();
@@ -70,19 +109,44 @@ describe(UserService, () => {
 
       expect(existing).not.toBeNull();
 
-      try {
-        await srv.registerUser(
+      const actual: ZodError = await srv
+        .registerUser(
           validParams({
             email,
           }),
-        );
-      } catch (e) {
-        debugger;
-        console.error(e);
-      }
+        )
+        .catch((e) => e);
 
-      // await expect(
-      // ).rejects.toThrow();
+      expect(actual.issues).toEqual([
+        expect.objectContaining({ path: ["email"] }),
+      ]);
+    });
+
+    test("rejects a user with duplicate handle", async () => {
+      const handle = uniqueHandle();
+
+      const em = services.em.fork();
+      const srv = new UserService(em);
+
+      const existing = await srv.registerUser(
+        validParams({
+          handle,
+        }),
+      );
+
+      expect(existing).not.toBeNull();
+
+      const actual: ZodError = await srv
+        .registerUser(
+          validParams({
+            handle,
+          }),
+        )
+        .catch((e) => e);
+
+      expect(actual.issues).toEqual([
+        expect.objectContaining({ path: ["handle"] }),
+      ]);
     });
   });
 });

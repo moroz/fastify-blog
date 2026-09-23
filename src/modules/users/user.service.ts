@@ -1,12 +1,22 @@
-import { EntityManager, EntityRepository } from "@mikro-orm/postgresql";
+import {
+  EntityManager,
+  EntityRepository,
+  UniqueConstraintViolationException,
+} from "@mikro-orm/postgresql";
 import argon2 from "argon2";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { User } from "./user.entity.js";
 
 export const registerUserInputSchema = z
   .object({
     email: z.email(),
-    handle: z.string(),
+    handle: z
+      .string()
+      .max(15, "Handle cannot be longer than 15 characters")
+      .regex(
+        /^[A-Za-z0-9_]+$/,
+        "Handle may only contain letters, numbers, and underscores.",
+      ),
     displayName: z.string(),
     password: z.string(),
     passwordConfirmation: z.string(),
@@ -21,6 +31,11 @@ export type RegisterUserInput = z.infer<typeof registerUserInputSchema>;
 
 export class UserService {
   private repository: EntityRepository<User>;
+
+  private constraintMapping: Record<string, keyof RegisterUserInput> = {
+    users_email_unique: "email",
+    users_handle_unique: "handle",
+  };
 
   constructor(private em: EntityManager) {
     this.repository = em.getRepository(User);
@@ -38,7 +53,25 @@ export class UserService {
       handle: params.handle,
     });
 
-    await this.em.flush();
+    try {
+      await this.em.flush();
+    } catch (err) {
+      if (err instanceof UniqueConstraintViolationException) {
+        const column = this.constraintMapping[(err as any).constraint];
+
+        if (column) {
+          throw new ZodError([
+            {
+              code: "custom",
+              message: "Has already been taken",
+              path: [column],
+            },
+          ]);
+        }
+      }
+
+      throw err;
+    }
 
     return user;
   }

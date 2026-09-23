@@ -253,20 +253,20 @@
         },
         "handle": {
           "name": "handle",
-          "type": "varchar(32)",
+          "type": "citext",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": true,
-          "length": 32,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "unknown"
         },
         "id": {
           "name": "id",

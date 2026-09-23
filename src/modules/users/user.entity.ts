@@ -8,7 +8,7 @@ export const UserSchema = defineEntity({
   tableName: "users",
   extends: BaseEntity,
   properties: {
-    handle: p.string().length(32).unique(),
+    handle: p.string().columnType("citext").unique(),
     email: p.string().columnType("citext").unique(),
     displayName: p.string().length(64),
     passwordHash: p.string().nullable(),
