@@ -1,40 +1,11 @@
-import { initServices, Services } from "@/services.js";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { test, uniqueEmail, uniqueHandle } from "@modules/common/fixtures.js";
+import { describe, expect } from "vitest";
+import { ZodError } from "zod";
 import {
   RegisterUserInput,
   registerUserInputSchema,
   UserService,
 } from "./user.service.js";
-import { TEST_DATABASE_URL } from "@/config.js";
-import { User } from "./user.entity.js";
-import { ZodError } from "zod";
-
-let services: Services;
-
-beforeAll(async () => {
-  services = await initServices({
-    clientUrl: TEST_DATABASE_URL,
-  });
-  await services.orm.migrator.up();
-
-  services.em.nativeDelete(User, {});
-});
-
-afterAll(async () => {
-  await services.orm.close();
-});
-
-function uniquePart(): string {
-  return Buffer.from(crypto.getRandomValues(new Uint8Array(4))).toString("hex");
-}
-
-function uniqueEmail(): string {
-  return `user-${uniquePart()}@example.com`;
-}
-
-function uniqueHandle(): string {
-  return `${uniquePart()}`;
-}
 
 function validParams(
   overrides?: Partial<RegisterUserInput>,
@@ -86,8 +57,7 @@ describe(UserService, () => {
   });
 
   describe("registerUser", () => {
-    test("creates a user with valid params", async () => {
-      const em = services.em.fork();
+    test("creates a user with valid params", async ({ em }) => {
       const srv = new UserService(em);
 
       const user = await srv.registerUser(validParams());
@@ -95,10 +65,9 @@ describe(UserService, () => {
       expect(user.passwordHash).toMatch(/^\$argon2id\$/);
     });
 
-    test("rejects a user with duplicate email address", async () => {
+    test("rejects a user with duplicate email address", async ({ em }) => {
       const email = uniqueEmail();
 
-      const em = services.em.fork();
       const srv = new UserService(em);
 
       const existing = await srv.registerUser(
@@ -122,10 +91,9 @@ describe(UserService, () => {
       ]);
     });
 
-    test("rejects a user with duplicate handle", async () => {
+    test("rejects a user with duplicate handle", async ({ em }) => {
       const handle = uniqueHandle();
 
-      const em = services.em.fork();
       const srv = new UserService(em);
 
       const existing = await srv.registerUser(
@@ -147,6 +115,23 @@ describe(UserService, () => {
       expect(actual.issues).toEqual([
         expect.objectContaining({ path: ["handle"] }),
       ]);
+    });
+  });
+
+  describe("authenticateUserByEmailPassword", () => {
+    test("returns user with valid params", async ({ em }) => {
+      const srv = new UserService(em);
+
+      const params = validParams();
+
+      const user = await srv.registerUser(params);
+      expect(user).not.toBeNull();
+
+      const actual = await srv.authenticateUserByEmailPassword(
+        params.email,
+        params.password,
+      );
+      expect(actual?.id).toEqual(user.id);
     });
   });
 });
